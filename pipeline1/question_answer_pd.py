@@ -24,10 +24,14 @@ def question_answer(qa_file):
 
     
 # walk /pfs/question_answer and call question_answer on every file found
-for files in os.walk("/pfs/question"):
+for dirpath, dirs, files in os.walk("/pfs/question"):
    for file in files:
+
+for dirpath, dirs, files in os.walk("/pfs/question"):
+   for name in files:
        print("We are looping in the files")
-       print("File Name: "+file)
-       question_answer(file)
+       print("File Name: "+name)
+       print(os.path.join(dirpath,name))
+       question_answer(os.path.join(dirpath,name))
 
     
