@@ -22,15 +22,15 @@ def question_answer(qa_file):
     
     data["answer"] = answer
     timestamp = str(int(time.time()))
-    data.to_csv('/pfs/out/'+"question_answer"+timestamp+".csv", index=False)    
+    data.to_csv("/pfs/out/"+"question_answer"+timestamp+".csv", index=False)    
 
     
 # walk /pfs/question_answer and call question_answer on every file found
 for dirpath, dirs, files in os.walk("/pfs/question"):
-   for name in files:
+   for file in files:
        print("We are looping in the files")
-       print("File Name: "+name)
-       print(os.path.join(dirpath,name))
-       question_answer(os.path.join(dirpath,name))
+       print("File Name: "+file)
+       print(os.path.join(dirpath,file))
+       question_answer(os.path.join(dirpath,file))
 
     
