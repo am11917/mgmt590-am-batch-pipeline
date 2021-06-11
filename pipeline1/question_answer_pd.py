@@ -20,7 +20,7 @@ def question_answer(qa_file):
         score.append(hg_comp({'question': question, 'context': context})['score'])
     
     data["answer"] = answer
-    data.to_csv('/pfs/question_answer/'+qa_file, index=False)    
+    data.to_csv('/pfs/out/'+qa_file, index=False)    
 
     
 # walk /pfs/question_answer and call question_answer on every file found
