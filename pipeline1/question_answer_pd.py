@@ -27,6 +27,7 @@ def question_answer(qa_file):
 for files in os.walk("/pfs/question"):
    for file in files:
        print("We are looping in the files")
+       print("File Name: "+file)
        question_answer(file)
 
     
