@@ -20,13 +20,11 @@ def question_answer(qa_file):
         score.append(hg_comp({'question': question, 'context': context})['score'])
     
     data["answer"] = answer
-    data.to_csv('/pfs/out/'+qa_file, index=False)    
+    timestamp = str(int(time.time()))
+    data.to_csv('/pfs/out/'+"question_answer"+timestamp+".csv", index=False)    
 
     
 # walk /pfs/question_answer and call question_answer on every file found
-for dirpath, dirs, files in os.walk("/pfs/question"):
-   for file in files:
-
 for dirpath, dirs, files in os.walk("/pfs/question"):
    for name in files:
        print("We are looping in the files")
