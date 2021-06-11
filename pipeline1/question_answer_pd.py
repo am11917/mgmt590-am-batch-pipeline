@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import time
 from transformers.pipelines import pipeline
 
 # function to read file from input directory
