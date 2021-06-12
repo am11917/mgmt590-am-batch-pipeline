@@ -71,7 +71,7 @@ if __name__ == '__main__':
     downloadFiles()
     
     # walk /pfs/question_answer and call question_answer on every file found
-    fdor dirpath, dirs, files in os.walk("/pfs/question"):
+    for dirpath, dirs, files in os.walk("/pfs/question"):
         for file in files:
             print("We are looping in the files")
             print("File Name: "+file)
