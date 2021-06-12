@@ -1,0 +1,39 @@
+{
+   "pipeline":{
+      "name":"question_answer"
+   },
+   "description":"A pipeline that dowloads files from GCS and answers questions.",
+   "transform":{
+      "cmd":[
+         "/bin/bash"
+      ],
+      "stdin":[
+         "echo $GCS_ACCESS > /app/rawcreds.txt",
+         "base64 --decode /app/rawcreds.txt > /app/creds.json",
+         "export GOOGLE_APPLICATION_CREDENTIALS=/app/creds.json",
+         "python /app/question_answer_pd.py"
+      ],
+      "image":"am11917/mgmt590-gcs:bf4288cb4debb7e2bc6352937dbd7dd8522fc64a",
+      "secrets":[
+         {
+            "name":"gcsaccess",
+            "env_var":"GCS_ACCESS",
+            "key":"creds"
+         },
+		 {
+            "name":"gcsaccess",
+            "env_var":"STORAGE_BUCKET",
+            "key":"storage_bucket"
+         }
+      ]
+   },
+   "input":{
+         
+            "cron":{
+               "name":"tick",
+               "spec":"@every 30s"
+            }
+         
+      
+   }
+}
