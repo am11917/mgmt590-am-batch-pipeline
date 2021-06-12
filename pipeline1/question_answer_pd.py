@@ -1,6 +1,7 @@
 import csv
 import os
 import time
+from google.cloud import storage
 from transformers.pipelines import pipeline
 
 # function to read file from input directory
@@ -47,11 +48,28 @@ def question_answer(qa_file):
     #data["answer"] = answer
     #data.to_csv("/pfs/out/"+"question_answer"+timestamp+".csv", index=False)    
 
+def downloadFiles(bucket):
+    logging.debug('Inside Download Files')
     
-# walk /pfs/question_answer and call question_answer on every file found
-for dirpath, dirs, files in os.walk("/pfs/question"):
-   for file in files:
-       print("We are looping in the files")
-       print("File Name: "+file)
-       print(os.path.join(dirpath,file))
-       question_answer(os.path.join(dirpath,file))
+    # Create this folder locally if not exists
+    try:
+        blobs = bucket.list_blobs(bucket)
+        for blob in blobs:
+            blob.download_to_filename('/pfs/question/')
+    except Exception as ex:
+        logging.error("Exception occurred while trying to download files " , ex)
+    
+if __name__ == '__main__':
+    
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket('mgmt590-prd-file-upload')
+    print("Downloading Files")
+    downloadFiles(bucket)
+    # walk /pfs/question_answer and call question_answer on every file found
+    for dirpath, dirs, files in os.walk("/pfs/question"):
+        for file in files:
+            print("We are looping in the files")
+            print("File Name: "+file)
+            print(os.path.join(dirpath,file))
+            question_answer(os.path.join(dirpath,file))
+    
