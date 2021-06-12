@@ -1,6 +1,7 @@
 import csv
 import os
 import time
+import logging
 from google.cloud import storage
 from transformers.pipelines import pipeline
 
