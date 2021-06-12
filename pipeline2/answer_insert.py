@@ -6,6 +6,7 @@ import datetime
 from datetime import timezone
 import pandas as pd
 import base64
+import shutil
 
 def insert_records (conn, question, answer, context, model_name):
     #create an sql cursor for execution of sql queries    
@@ -100,3 +101,4 @@ if __name__ == '__main__':
                 print("inserting records into the table")
                 insert_records(conn, question, answer, context,model_name) 
                 print("Insert records successful")
+            shutil.move(os.path.join(dirpath,file), '/pfs/out/'+file)
