@@ -91,7 +91,7 @@ if __name__ == '__main__':
         for file in files:
             print("We are looping in the files")
             print("File Name: "+file)
-            data = pd.read_csv(file)
+            data = pd.read_csv(os.path.join(dirpath,file))
             for idx, row in data.iterrows():
                 context = row['context']
                 question = row['question']
