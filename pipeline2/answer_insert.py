@@ -64,7 +64,7 @@ if __name__ == '__main__':
     port="port=5432"
     user="user={}".format(os.environ.get('PG_USER'))
     dbname="dbname={}".format(os.environ.get('PG_DBNAME'))
-    password="password={}".format(os.environ.get('PG_USER_PASSWORD'))
+    password="password={}".format(os.environ.get('PG_PASSWORD'))
     
     sslrootcert="sslrootcert=.ssl/server-ca.pem"
     sslcert="sslcert=.ssl/client-cert.pem"
