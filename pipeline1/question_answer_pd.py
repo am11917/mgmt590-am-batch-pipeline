@@ -48,23 +48,24 @@ def question_answer(qa_file):
     #data["answer"] = answer
     #data.to_csv("/pfs/out/"+"question_answer"+timestamp+".csv", index=False)    
 
-def downloadFiles(bucket):
+def downloadFiles():
     logging.debug('Inside Download Files')
-    
+
     # Create this folder locally if not exists
     try:
-        blobs = bucket.list_blobs(bucket)
+        blobs = bucket.list_blobs()
         for blob in blobs:
-            blob.download_to_filename('/pfs/question/')
+            blob.download_to_filename('/pfs/question/'+blob.name)
     except Exception as ex:
-        logging.error("Exception occurred while trying to download files " , ex)
+       logging.error("Exception occurred while trying to download files " , ex)
     
 if __name__ == '__main__':
     
     storage_client = storage.Client()
     bucket = storage_client.get_bucket('mgmt590-prd-file-upload')
     print("Downloading Files")
-    downloadFiles(bucket)
+    downloadFiles()
+    
     # walk /pfs/question_answer and call question_answer on every file found
     for dirpath, dirs, files in os.walk("/pfs/question"):
         for file in files:
