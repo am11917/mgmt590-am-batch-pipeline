@@ -59,22 +59,21 @@ def delete_one_file(filename):
     except Exception as ex:
         logging.error("Exception occurred while trying to delete files ",ex)
     
-if __name__ == '__main__':
+   
+storage_client = storage.Client()
+bucket = storage_client.get_bucket('mgmt590-prd-file-upload')
+print("Downloading Files")
+downloadFiles()
     
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket('mgmt590-prd-file-upload')
-    print("Downloading Files")
-    downloadFiles()
-    
-    # walk /pfs/question_answer and call question_answer on every file found
-    for dirpath, dirs, files in os.walk("/pfs/question"):
-        for file in files:
-            print("We are looping in the files")
-            print("File Name: "+file)
-            print(os.path.join(dirpath,file))
-            question_answer(os.path.join(dirpath,file))
-            print("Questions Answered and File Successfully Written")
-            print("Initiating the Delete method to delete file from GCS")
-            delete_one_file(file)
-            print("File Deleted Successfully from GCS")
+# walk /pfs/question_answer and call question_answer on every file found
+for dirpath, dirs, files in os.walk("/pfs/question"):
+    for file in files:
+        print("We are looping in the files")
+        print("File Name: "+file)
+        print(os.path.join(dirpath,file))
+        question_answer(os.path.join(dirpath,file))
+        print("Questions Answered and File Successfully Written")
+        print("Initiating the Delete method to delete file from GCS")
+        delete_one_file(file)
+        print("File Deleted Successfully from GCS")
     
