@@ -5,6 +5,7 @@ import psycopg2
 import datetime
 from datetime import timezone
 import pandas as pd
+import base64
 
 def insert_records (conn, question, answer, context, model_name):
     #create an sql cursor for execution of sql queries    
