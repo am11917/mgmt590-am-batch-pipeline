@@ -47,7 +47,7 @@ def downloadFiles():
     try:
         blobs = bucket.list_blobs()
         for blob in blobs:
-            blob.download_to_filename(blob.name)
+            blob.download_to_filename('/pfs/question/')
     except Exception as ex:
        logging.error("Exception occurred while trying to download files " , ex)
 
