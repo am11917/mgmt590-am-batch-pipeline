@@ -4,11 +4,13 @@ from io import BytesIO
 from transformers.pipelines import pipeline
 from google.cloud import storage
 import pandas as pd
+import time
 
 hg_comp = pipeline('question-answering', model="distilbert-base-uncased-distilled-squad", tokenizer="distilbert-base-uncased-distilled-squad")
 
 storage_client = storage.Client()
-bucket = storage_client.get_bucket('mgmt590-prd-file-upload')
+bucket_name = os.environ.get('STORAGE_BUCKET')
+bucket = storage_client.get_bucket(bucket_name)
 
 files = bucket.list_blobs()
 fileList = [file.name for file in files if '.' in file.name]
@@ -31,4 +33,5 @@ for fileName in fileList:
 df_final['context'] = df_intmd['context']
 df_final['question'] = df_intmd['question']
 df_final['answer'] = answer_intmd
-df_final.to_csv("pfs/out/answers.csv", index=False, header=True)
+timestamp = str(int(time.time()))
+df_final.to_csv("pfs/out/question_answer_"+timestamp+".csv", index=False, header=True)
