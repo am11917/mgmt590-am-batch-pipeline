@@ -10,6 +10,7 @@ hg_comp = pipeline('question-answering', model="distilbert-base-uncased-distille
 
 storage_client = storage.Client()
 bucket_name = os.environ.get('STORAGE_BUCKET')
+print(bucket_name)
 bucket = storage_client.get_bucket(bucket_name)
 
 files = bucket.list_blobs()
