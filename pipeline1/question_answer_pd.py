@@ -38,9 +38,8 @@ def delete_one_file(filename):
     logging.debug('Inside delete files')
     print("Inside the delete file function")
     try:
-        blob = bucket.blob(filename)
         print("retriveing file name and already put in the blob")
-        blob.delete()
+        bucket.delete_blob(filename)
         print("delete complete")
     except Exception as ex:
         logging.error("Exception occurred while trying to delete files ",ex)
