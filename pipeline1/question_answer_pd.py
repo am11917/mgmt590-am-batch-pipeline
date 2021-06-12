@@ -35,11 +35,13 @@ def question_answer(fileName, data):
     
 if __name__ == '__main__':
 
-    bucket_name = 'mgmt590-prd-file-upload'
+    bucket_name = os.environ.get('STORAGE_BUCKET')
+    print("bucket_name")
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     print("Downloading Files")
     files = bucket.list_blobs()
+    
     fileList = [file.name for file in files if '.' in file.name]
     for fileName in fileList:
         print("Inside the File List Loop")
