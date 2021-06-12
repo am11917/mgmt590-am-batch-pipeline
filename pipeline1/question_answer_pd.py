@@ -53,4 +53,3 @@ if __name__ == '__main__':
         print("calling delete function")
         bucket.delete_blob(fileName)
         print("delete completed")
-        print
