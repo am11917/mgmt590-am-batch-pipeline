@@ -43,37 +43,42 @@ def question_answer(qa_file):
  
 def downloadFiles():
     logging.debug('Inside Download Files')
-
+    print("Inside Download Files")
     try:
         blobs = bucket.list_blobs()
+        print("Read the list of blobs")
         for blob in blobs:
+            print("Inside the blob loop")
             blob.download_to_filename('/pfs/question/'+blob.name)
     except Exception as ex:
        logging.error("Exception occurred while trying to download files " , ex)
 
 def delete_one_file(filename):
-    logging.debug('Inside delete files')
+    logging.debug('Inside delete files') 
+    print("Inside the delete file function")
     try:
         blob = bucket.blob(filename)
+        print("retriveing file name and already put in the blob")
         blob.delete()
+        print("delete complete")
     except Exception as ex:
         logging.error("Exception occurred while trying to delete files ",ex)
     
-   
-storage_client = storage.Client()
-bucket = storage_client.get_bucket('mgmt590-prd-file-upload')
-print("Downloading Files")
-downloadFiles()
+if __name__ == '__main__':
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket('mgmt590-prd-file-upload')
+    print("Downloading Files")
+    downloadFiles()
     
-# walk /pfs/question_answer and call question_answer on every file found
-for dirpath, dirs, files in os.walk("/pfs/question"):
-    for file in files:
-        print("We are looping in the files")
-        print("File Name: "+file)
-        print(os.path.join(dirpath,file))
-        question_answer(os.path.join(dirpath,file))
-        print("Questions Answered and File Successfully Written")
-        print("Initiating the Delete method to delete file from GCS")
-        delete_one_file(file)
-        print("File Deleted Successfully from GCS")
+    # walk /pfs/question_answer and call question_answer on every file found
+    fdor dirpath, dirs, files in os.walk("/pfs/question"):
+        for file in files:
+            print("We are looping in the files")
+            print("File Name: "+file)
+            print(os.path.join(dirpath,file))
+            question_answer(os.path.join(dirpath,file))
+            print("Questions Answered and File Successfully Written")
+            print("Initiating the Delete method to delete file from GCS")
+            delete_one_file(file)
+            print("File Deleted Successfully from GCS")
     
