@@ -102,3 +102,4 @@ if __name__ == '__main__':
                 insert_records(conn, question, answer, context,model_name) 
                 print("Insert records successful")
             shutil.move(os.path.join(dirpath,file), '/pfs/out/'+file)
+            print("File successfully moved to: "+"/pfs/out/"+file+" location")
