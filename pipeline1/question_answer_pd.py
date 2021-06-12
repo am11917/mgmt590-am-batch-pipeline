@@ -16,9 +16,12 @@ def question_answer(qa_file):
     contexts = []
     
     with open(qa_file,'r') as file:
+        print("inside file reading loop")
         reader = csv.DictReader(file)
+        print("file read complete")
+        print(reader)
         for row in reader:
-            print(row)
+            print("Inside File Row Read loop")
             context = row['context']
             question = row['question']
             answer.append(hg_comp({'question': question, 'context': context})['answer'])
