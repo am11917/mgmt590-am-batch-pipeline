@@ -26,7 +26,9 @@ def insert_records (conn, question, answer, context, model_name):
 def create_connection (dbconnect):
     conn = None
     try:
+        print("Initiating the connnection")
         conn = psycopg2.connect(dbconnect)
+        print("Connection created to Postgres")
     except Error as e:
         print(e)
     
@@ -36,22 +38,25 @@ def create_connection (dbconnect):
 if __name__ == '__main__':
 
     sslmode="sslmode=verify-ca"
+    
     if not os.path.exists('.ssl'):
         os.makedirs('.ssl')
     
-    filecontents = os.environ.get('PG_SSLROOTCERT').replace("@", "=")
+    filecontents = os.environ.get('PG_SSLROOTCERT')
+    decoded_sslrootcert = base64.b64decode(filecontents)
+    with open('.ssl/server-ca.pem', 'wb') as f:
+        f.write(decoded_sslrootcert)
     
-    with open('.ssl/server-ca.pem', 'w') as f:
-        f.write(filecontents)
-    
-    filecontents = os.environ.get('PG_SSLCLIENT_CERT').replace("@", "=")
-    with open('.ssl/client-cert.pem', 'w') as f:
-        f.write(filecontents)
+    filecontents = os.environ.get('PG_SSLCLIENT_CERT')
+    decoded_sslclientcert = base64.b64decode(filecontents)
+    with open('.ssl/client-cert.pem', 'wb') as f:
+        f.write(decoded_sslclientcert)
     
     filecontents = os.environ.get('PG_SSL_CLIENT_KEY')
-    with open('.ssl/client-key.pem', 'w') as f:
-        f.write(filecontents)
-    
+    decoded_sslclientkey = base64.b64decode(filecontents)
+    with open('.ssl/client-key.pem', 'wb') as f:
+        f.write(decoded_sslclientkey)
+           
     os.chmod(".ssl/server-ca.pem", 0o600)
     os.chmod(".ssl/client-cert.pem", 0o600)
     os.chmod(".ssl/client-key.pem", 0o600)
@@ -78,6 +83,7 @@ if __name__ == '__main__':
     ])
     
     # connect to db
+    print("Starting the connection to SQL")
     conn = create_connection(dbconnect)
     
     for dirpath, dirs, files in os.walk("/pfs/question_answer"):
