@@ -38,7 +38,7 @@ def question_answer(qa_file):
     #    questions.append(question)
     #    answer.append(hg_comp({'question': question, 'context': context})['answer'])
     timestamp = str(int(time.time()))
-    with open('/pfs/out/'+"question_answer_"+timestamp+".csv","wb") as f:
+    with open('/pfs/out/'+"question_answer_"+timestamp+".csv",'w') as f:
         fileWriter = csv.writer(f, delimiter=',')
         for row in zip(*final_answer):
             fileWriter.writerow(row)
