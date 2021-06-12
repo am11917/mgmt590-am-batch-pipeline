@@ -23,3 +23,5 @@ jobs:
           cd pipeline1 && docker build -t am11917/mgmt590-gcs:${{ github.sha }} .
           docker push am11917/mgmt590-gcs:${{ github.sha }} && cd ../
 
+          cd pipeline2 && docker build -t am11917/mgmt590-db:${{ github.sha }} .
+          docker push am11917/mgmt590-db:${{ github.sha }} && cd ../
