@@ -19,6 +19,7 @@ SSLKEY_ENCODED=$(echo $PG_SSLKEY | base64 -w 0)
 sed -i -e 's|'REPLACE_PG_HOST'|'"$PG_HOST"'|g' secret_db.json
 sed -i -e 's|'REPLACE_PG_PASSWORD'|'"$PG_PASSWORD"'|g' secret_db.json
 sed -i -e 's|'REPLACE_PG_DBNAME'|'"$PG_DBNAME"'|g' secret_db.json
+sed -i -e 's|'REPLACE_PG_USER'|'"$PG_USER"'|g' secret_db.json
 sed -i -e 's|'REPLACE_PG_SSLROOTCERT'|'"$SSLROOTCERT_ENCODED"'|g' secret_db.json
 sed -i -e 's|'REPLACE_PG_SSLCERT'|'"$SSLCERT_ENCODED"'|g' secret_db.json
 sed -i -e 's|'REPLACE_PG_SSLKEY'|'"$SSLKEY_ENCODED"'|g' secret_db.json
