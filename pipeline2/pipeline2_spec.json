@@ -1,6 +1,6 @@
 {
    "pipeline":{
-      "name":"push-answers"
+      "name":"push-answers-to-postgre"
    },
    "description":"A pipeline that pushes answers to the database",
    "transform":{
