@@ -22,6 +22,7 @@ def question_answer(qa_file):
         print(reader)
         for row in reader:
             print("Inside File Row Read loop")
+            print(row)
             context = row["context"]
             question = row["question"]
             answer.append(hg_comp({'question': question, 'context': context})['answer'])
