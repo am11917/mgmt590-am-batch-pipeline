@@ -1,4 +1,5 @@
-import csv
+
+import pandas as pd
 import os
 import time
 from transformers.pipelines import pipeline
@@ -7,45 +8,22 @@ from transformers.pipelines import pipeline
 # answer the questions and write it to output directory
 def question_answer(qa_file):
     #importing the file using pandas library
-    #data = pd.read_csv(qa_file)
-    final_answer = []
-       
+    data = pd.read_csv(qa_file)
+   
     hg_comp = pipeline('question-answering', model="distilbert-base-uncased-distilled-squad", tokenizer="distilbert-base-uncased-distilled-squad")
     answer = []
+    score = []
     questions = []
-    contexts = []
+    for idx, row in data.iterrows():
+        context = row['context']
+        question = row['question']
+        questions.append(question)
+        answer.append(hg_comp({'question': question, 'context': context})['answer'])
+        score.append(hg_comp({'question': question, 'context': context})['score'])
     
-    with open(qa_file,'r') as file:
-        print("inside file reading loop")
-        reader = csv.DictReader(file)
-        print("file read complete")
-        print(reader)
-        for row in reader:
-            print("Inside File Row Read loop")
-            print(row)
-            context = row["context"]
-            question = row["question"]
-            answer.append(hg_comp({'question': question, 'context': context})['answer'])
-            questions.append(question)
-            contexts.append(context)
-        final_answer.append(questions)
-        final_answer.append(contexts)
-        final_answer.append(answer)
-        print (final_answer)
-    #for idx, row in data.iterrows():
-    #    context = row['context']
-    #    question = row['question']
-    #    questions.append(question)
-    #    answer.append(hg_comp({'question': question, 'context': context})['answer'])
+    data["answer"] = answer
     timestamp = str(int(time.time()))
-    with open('/pfs/out/'+"question_answer_"+timestamp+".csv","wb") as f:
-        fileWriter = csv.writer(f, delimiter=',')
-        for row in zip(*final_answer):
-            fileWriter.writerow(row)
- 
-    
-    #data["answer"] = answer
-    #data.to_csv("/pfs/out/"+"question_answer"+timestamp+".csv", index=False)    
+    data.to_csv("/pfs/out/"+"question_answer"+timestamp+".csv", index=False)    
 
     
 # walk /pfs/question_answer and call question_answer on every file found
@@ -55,5 +33,3 @@ for dirpath, dirs, files in os.walk("/pfs/question"):
        print("File Name: "+file)
        print(os.path.join(dirpath,file))
        question_answer(os.path.join(dirpath,file))
-
-    
