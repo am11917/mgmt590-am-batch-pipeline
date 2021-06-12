@@ -9,6 +9,7 @@ GCS_ENCODED=$(cat $GOOGLE_APPLICATION_CREDENTIALS | base64 -w 0)
 
 # Substitute those creds into our secrets file
 sed -i -e 's|'REPLACE_GCS_CREDS'|'"$GCS_ENCODED"'|g' secret.json
+sed -i -e 's|'REPLACE_STORAGE_BUCKET'|'"$STORAGE_BUCKET"'|g' secret.json
 
 # Encode our SSL certs
 SSLROOTCERT_ENCODED=$(cat $PG_SSLROOTCERT | base64 -w 0)
