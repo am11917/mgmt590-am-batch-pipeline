@@ -9,9 +9,7 @@ from transformers.pipelines import pipeline
 # answer the questions and write it to output directory
 def question_answer(qa_file):
     #importing the file using pandas library
-    #data = pd.read_csv(qa_file)
-    final_answer = []
-       
+    final_answer = []    
     hg_comp = pipeline('question-answering', model="distilbert-base-uncased-distilled-squad", tokenizer="distilbert-base-uncased-distilled-squad")
     answer = []
     questions = []
@@ -34,31 +32,32 @@ def question_answer(qa_file):
         final_answer.append(contexts)
         final_answer.append(answer)
         print (final_answer)
-    #for idx, row in data.iterrows():
-    #    context = row['context']
-    #    question = row['question']
-    #    questions.append(question)
-    #    answer.append(hg_comp({'question': question, 'context': context})['answer'])
+
     timestamp = str(int(time.time()))
     with open('/pfs/out/'+"question_answer_"+timestamp+".csv",'w') as f:
         fileWriter = csv.writer(f, delimiter=',')
+        print("Inside the file write block")
         for row in zip(*final_answer):
             fileWriter.writerow(row)
+    print("File Write Complete")
  
-    
-    #data["answer"] = answer
-    #data.to_csv("/pfs/out/"+"question_answer"+timestamp+".csv", index=False)    
-
 def downloadFiles():
     logging.debug('Inside Download Files')
 
-    # Create this folder locally if not exists
     try:
         blobs = bucket.list_blobs()
         for blob in blobs:
             blob.download_to_filename('/pfs/question/'+blob.name)
     except Exception as ex:
        logging.error("Exception occurred while trying to download files " , ex)
+
+def delete_one_file(filename):
+    logging.debug('Inside delete files')
+    try:
+        blob = bucket.blob(filename)
+        blob.delete()
+    except Exception as ex:
+        logging.error("Exception occurred while trying to delete files ",ex)
     
 if __name__ == '__main__':
     
@@ -74,4 +73,8 @@ if __name__ == '__main__':
             print("File Name: "+file)
             print(os.path.join(dirpath,file))
             question_answer(os.path.join(dirpath,file))
+            print("Questions Answered and File Successfully Written")
+            print("Initiating the Delete method to delete file from GCS")
+            delete_one_file(file)
+            print("File Deleted Successfully from GCS")
     
