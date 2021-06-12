@@ -1,0 +1,53 @@
+{
+  "pipeline": {
+    "name": "push-answers"
+  },
+  "description": "A pipeline that pushes answers to the database",
+  "transform": {
+    "cmd": [ "python", "/app/answer_insert.py" ],
+    "image": "xyz",
+    "secrets": [ 
+      {
+        "name": "dbaccess",
+        "env_var": "PG_HOST",
+        "key": "host"
+      },
+      {
+        "name": "dbaccess",
+	"env_var": "PG_PASSWORD",
+	"key": "password"
+      },
+      {
+        "name": "dbaccess",
+	"env_var": "PG_USER",
+	"key": "user"
+      },
+        {
+        "name": "dbaccess",
+	"env_var": "PG_DBNAME",
+	"key": "dbname"
+      },
+       {
+        "name": "dbaccess",
+	"env_var": "PG_SSLROOTCERT",
+	"key": "sslrootcert"
+      },
+         {
+        "name": "dbaccess",
+	"env_var": "PG_SSLCLIENT_CERT",
+	"key": "sslcert"
+      },
+         {
+        "name": "dbaccess",
+	"env_var": "PG_SSL_CLIENT_KEY",
+	"key": "sslkey"
+      }
+    ]
+  },
+  "input": {
+    "pfs": {
+      "repo": "question_answer",
+      "glob": "/"
+    }
+  }
+}
