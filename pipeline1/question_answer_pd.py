@@ -32,18 +32,7 @@ def question_answer(fileName, data):
     timestamp = str(int(time.time()))
     print("writing file to location")
     df_final.to_csv("/pfs/out/question_answer_"+timestamp+".csv", index=False, header=True,  encoding="utf-8")
-    delete_one_file(fileName)
-
-def delete_one_file(filename):
-    logging.debug('Inside delete files')
-    print("Inside the delete file function")
-    try:
-        print("retriveing file name and already put in the blob")
-        bucket.delete_blob(filename)
-        print("delete complete")
-    except Exception as ex:
-        logging.error("Exception occurred while trying to delete files ",ex)
-
+    
 if __name__ == '__main__':
 
     bucket_name = 'mgmt590-prd-file-upload'
@@ -60,3 +49,8 @@ if __name__ == '__main__':
         print("File Downloaded as string")
         print("Calling the Question Answer Function")
         question_answer(fileName,data)
+        print("question_answer completed")
+        print("calling delete function")
+        bucket.delete_blob(fileName)
+        print("delete completed")
+        print
