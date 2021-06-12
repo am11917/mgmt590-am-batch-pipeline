@@ -60,3 +60,4 @@ if __name__ == '__main__':
         data = am_blob.download_as_string()
         print("File Downloaded as string")
         print("Calling the Question Answer Function")
+        question_answer(fileName,data)
