@@ -1,0 +1,7 @@
+## libraries with version ##
+transformers==4.6.1
+flask==2.0.1
+psycopg2-binary
+pytest==6.2.2
+pandas
+google-cloud-storage
