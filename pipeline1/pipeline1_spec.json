@@ -31,7 +31,7 @@
          
             "cron":{
                "name":"tick",
-               "spec":"@every 30s"
+               "spec":"@every 300s"
             }
          
       
