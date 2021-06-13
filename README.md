@@ -286,5 +286,13 @@ Refer to [this helpful tutorial](https://docs.pachyderm.com/latest/getting_start
   - Logs of the running jobs </br>
 ![image](https://user-images.githubusercontent.com/69768815/121792458-f3d74f00-cbc2-11eb-93a7-86a199b70c59.png)
 
-# Hope you'll be able to easily replicate the process of creating this batch processing pipeline
-# Reach out to me in case of any questions or concerns
+#### 8. Changes to pipeline specification/ new docker image pushed
+ - If you have made any code changes in your python scripts and a new docker image has been pushed
+ - Update the pipeline specification json with the new image name
+ - Update the existing pipeline with the new specification json
+```
+pachctl update-pipeline -f pipeline1.json
+```
+### Hope you'll be able to easily replicate the process of creating this batch processing pipeline. Reach out to me in case of any questions or concerns
+### Thanks
+### Ayush Maheshwari
