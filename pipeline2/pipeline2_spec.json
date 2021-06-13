@@ -8,7 +8,7 @@
          "python",
          "/app/answer_insert.py"
       ],
-      "image":"xyz",
+      "image":"am11917/mgmt590-db:cf2b6fe5d7896a8223b4928d7dd68444208baf81",
       "secrets":[
          {
             "name":"dbaccess",
