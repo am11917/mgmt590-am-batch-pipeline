@@ -38,7 +38,8 @@ def create_connection (dbconnect):
     
 
 if __name__ == '__main__':
-
+    
+    #reading the secrets and decoding
     sslmode="sslmode=verify-ca"
     
     if not os.path.exists('.ssl'):
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     sslrootcert="sslrootcert=.ssl/server-ca.pem"
     sslcert="sslcert=.ssl/client-cert.pem"
     sslkey="sslkey=.ssl/client-key.pem"
-    
+    #creating the final string to be passed for creating connection with postgresql
     dbconnect = " ".join([
     sslmode,
     sslrootcert,
@@ -87,7 +88,7 @@ if __name__ == '__main__':
     # connect to db
     print("Starting the connection to SQL")
     conn = create_connection(dbconnect)
-    
+    #reading the file stored in the pipeline1 output repository
     for dirpath, dirs, files in os.walk("/pfs/question_answer"):
         for file in files:
             print("We are looping in the files")
@@ -101,5 +102,6 @@ if __name__ == '__main__':
                 print("inserting records into the table")
                 insert_records(conn, question, answer, context,model_name) 
                 print("Insert records successful")
+            #moving the file from pipeline1 output repo to pipeline 2 output repo    
             shutil.move(os.path.join(dirpath,file), '/pfs/out/'+file)
             print("File successfully moved to: "+"/pfs/out/"+file+" location")
