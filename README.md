@@ -311,6 +311,49 @@ question_answer     1       tick:@every 300s  11 seconds ago running / starting 
   - Logs of the running jobs </br>
 ![image](https://user-images.githubusercontent.com/69768815/121792458-f3d74f00-cbc2-11eb-93a7-86a199b70c59.png)
 
+ - List the repo after running the pipeline
+```
+pachctl list repo 
+```
+```
+am-11917@docker-ubuntu-1-vm:~$ pachctl list repo
+NAME                 CREATED        SIZE (MASTER) ACCESS LEVEL
+push-answers-to-sql  19 minutes ago 3.235KiB      OWNER        Output repo for pipeline push-answers-to-sql.
+question_answer      19 minutes ago 3.235KiB      OWNER        Output repo for pipeline question_answer.
+question_answer_tick 19 minutes ago 0B            OWNER        Cron tick repo for pipeline question_answer.
+```
+![image](https://user-images.githubusercontent.com/69768815/121793513-c8a62d00-cbcd-11eb-8f61-6953992f680b.png)
+ 
+ - List the jobs running in these pipelines
+```
+pachctl list job
+```
+
+```
+am-11917@docker-ubuntu-1-vm:~$ pachctl list job
+ID                               PIPELINE            STARTED        DURATION   RESTART PROGRESS  DL       UL       STATE
+72c9d2445da04e1abb66c829afd10698 push-answers-to-sql 21 seconds ago 3 seconds  0       1 + 0 / 1 3.235KiB 3.235KiB success
+5d2c5ec96cf34c8fa02f47b84516e23e question_answer     33 seconds ago 12 seconds 0       1 + 1 / 2 0B       3.235KiB success
+fa48713b6cfe47ed905dea72d8e14d44 push-answers-to-sql 5 minutes ago  3 seconds  0       1 + 0 / 1 0B       0B       success
+741d6204caea418fb21c42260c928a50 question_answer     5 minutes ago  16 seconds 0       1 + 0 / 1 0B       0B       success
+```
+![image](https://user-images.githubusercontent.com/69768815/121793381-77e20480-cbcc-11eb-9e0a-41b7242e31d0.png)
+
+ - List the files uploaded in the repo post successful run of the job
+```
+pachctl list file question_answer@master
+am-11917@docker-ubuntu-1-vm:~$ pachctl list file question_answer@master
+NAME                            TYPE SIZE
+/question_answer_1623550812.csv file 3.235KiB
+```
+```
+pachctl list file push-answers-to-sql@master
+am-11917@docker-ubuntu-1-vm:~$ pachctl list file push-answers-to-sql@master
+NAME                            TYPE SIZE
+/question_answer_1623550812.csv file 3.235KiB
+```
+![image](https://user-images.githubusercontent.com/69768815/121793598-a1039480-cbce-11eb-84e4-c15ebf37b75e.png)
+
 #### 8. Check status of jobs in pipelines
  - You can check the status of the jobs running in the pipelines
 ```
