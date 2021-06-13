@@ -90,10 +90,23 @@ The pachctl or pach control is a command line tool that you can use to interact 
    ![image](https://user-images.githubusercontent.com/69768815/121792149-67775d00-cbbf-11eb-92b6-afd91f01bdb1.png)
 
     
-#### 4. Create a new repository using pachctl command 
+#### 4. Create a new repository and List repo using pachctl command 
 ```
     pachctl create repo <<repo-name-here>>
+    
+    pachctl list repo
    ```
+   ``This screenshot is after the deployment of the pipeline``
+   ```
+   am-11917@docker-ubuntu-1-vm:~$ pachctl list repo
+   NAME                 CREATED     SIZE (MASTER) ACCESS LEVEL
+   push-answers-to-sql  3 hours ago 3.235KiB      OWNER        Output repo for pipeline push-answers-to-sql.
+   question_answer      3 hours ago 3.235KiB      OWNER        Output repo for pipeline question_answer.
+   question_answer_tick 3 hours ago 0B            OWNER        Cron tick repo for pipeline question_answer.
+  ```
+  ![image](https://user-images.githubusercontent.com/69768815/121793156-4bc58400-cbca-11eb-88cf-3067080552a2.png)
+
+   
 #### 5. Configure Secrets in Pachyderm
 Once we are connected to pachyderm, we need to configure the secrets that would authenticate the connection between Pachyderm Kubernetes cluster and your Google Cloud applications - GCS bucket and PostgreSQL </br>
    - Create environment variables in the terminal/linux or cloud shell you are using to connect to pachyderm</br>
@@ -279,6 +292,18 @@ Once the specification json is created, we will now create the pipelines
    pachctl create pipeline -f pipeline2.json
    ```
 Refer to [this helpful tutorial](https://docs.pachyderm.com/latest/getting_started/beginner_tutorial/) to make your pipeline spec. 
+You can list the created pipelines using the following command
+```
+pachctl list pipeline
+```
+Output
+```
+am-11917@docker-ubuntu-1-vm:~$ pachctl list pipeline
+NAME                VERSION INPUT             CREATED        STATE / LAST JOB   DESCRIPTION
+push-answers-to-sql 1       question_answer:/ 6 seconds ago  running / starting A pipeline that pushes answers to the database
+question_answer     1       tick:@every 300s  11 seconds ago running / starting A pipeline that dowloads files from GCS and answers questions.
+```
+![image](https://user-images.githubusercontent.com/69768815/121793242-2dac5380-cbcb-11eb-91a7-c98188fe98b2.png)
 
 #### 7. Output of Pipeline on Pachyderm Dash
   - Pipelines on Dashboard </br>
@@ -286,7 +311,104 @@ Refer to [this helpful tutorial](https://docs.pachyderm.com/latest/getting_start
   - Logs of the running jobs </br>
 ![image](https://user-images.githubusercontent.com/69768815/121792458-f3d74f00-cbc2-11eb-93a7-86a199b70c59.png)
 
-#### 8. Changes to pipeline specification/ new docker image pushed
+#### 8. Check status of jobs in pipelines
+ - You can check the status of the jobs running in the pipelines
+```
+pachctl list job
+```
+ - Output
+```
+am-11917@docker-ubuntu-1-vm:~$ pachctl list job
+ID                               PIPELINE            STARTED        DURATION   RESTART PROGRESS  DL UL STATE
+fa48713b6cfe47ed905dea72d8e14d44 push-answers-to-sql 10 seconds ago 3 seconds  0       1 + 0 / 1 0B 0B success
+741d6204caea418fb21c42260c928a50 question_answer     26 seconds ago 16 seconds 0       1 + 0 / 1 0B 0B success
+
+```
+![image](https://user-images.githubusercontent.com/69768815/121793302-c3e07980-cbcb-11eb-8f55-ca1fa5e0aa37.png)
+```
+am-11917@docker-ubuntu-1-vm:~$ pachctl list job
+ID                               PIPELINE            STARTED        DURATION   RESTART PROGRESS  DL       UL       STATE
+72c9d2445da04e1abb66c829afd10698 push-answers-to-sql 21 seconds ago 3 seconds  0       1 + 0 / 1 3.235KiB 3.235KiB success
+5d2c5ec96cf34c8fa02f47b84516e23e question_answer     33 seconds ago 12 seconds 0       1 + 1 / 2 0B       3.235KiB success
+fa48713b6cfe47ed905dea72d8e14d44 push-answers-to-sql 5 minutes ago  3 seconds  0       1 + 0 / 1 0B       0B       success
+741d6204caea418fb21c42260c928a50 question_answer     5 minutes ago  16 seconds 0       1 + 0 / 1 0B       0B       success
+
+```
+![image](https://user-images.githubusercontent.com/69768815/121793381-77e20480-cbcc-11eb-9e0a-41b7242e31d0.png)
+
+
+  - Check the logs of the jobs using the following command
+```
+pachctl list job
+pachctl logs -v -j <<job_id>>
+pachctl logs -v -j 5d2c5ec96cf34c8fa02f47b84516e23e
+```
+  - Logs
+```
+am-11917@docker-ubuntu-1-vm:~$ pachctl logs -v -j 5d2c5ec96cf34c8fa02f47b84516e23e
+[0000]  INFO parsed scheme: "dns" source=etcd/grpc
+[0000]  INFO ccResolverWrapper: sending update to cc: {[{35.185.199.42:31400  <nil> 0 <nil>}] <nil> <nil>} source=etcd/grpc
+[0000]  INFO ClientConn switching balancer to "pick_first" source=etcd/grpc
+2021-06-13 02:20:06.993141: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2021-06-13 02:20:07.029095: W tensorflow/python/util/util.cc:348] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+2021-06-13 02:20:07.100361: W tensorflow/core/framework/cpu_allocator_impl.cc:80] Allocation of 93763584 exceeds 10% of free system memory.
+2021-06-13 02:20:07.349987: W tensorflow/core/framework/cpu_allocator_impl.cc:80] Allocation of 93763584 exceeds 10% of free system memory.
+2021-06-13 02:20:07.382704: W tensorflow/core/framework/cpu_allocator_impl.cc:80] Allocation of 93763584 exceeds 10% of free system memory.
+2021-06-13 02:20:08.516193: W tensorflow/core/framework/cpu_allocator_impl.cc:80] Allocation of 93763584 exceeds 10% of free system memory.
+2021-06-13 02:20:08.618882: W tensorflow/core/framework/cpu_allocator_impl.cc:80] Allocation of 93763584 exceeds 10% of free system memory.
+All model checkpoint layers were used when initializing TFDistilBertForQuestionAnswering.
+
+All the layers of TFDistilBertForQuestionAnswering were initialized from the model checkpoint at distilbert-base-uncased-distilled-squad.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use TFDistilBertForQuestionAnswering for predictions without further training.
+Downloading Files
+Inside the File List Loop
+Blob Created
+File Downloaded as string
+Calling the Question Answer Function
+file_read
+file_aded to intmd
+writing file to location
+question_answer completed
+calling delete function
+delete completed
+```
+ - Output
+![image](https://user-images.githubusercontent.com/69768815/121793396-9e07a480-cbcc-11eb-9a3f-5df1239da612.png)
+
+ - Another logs command
+```
+pachctl logs -v -j 72c9d2445da04e1abb66c829afd10698
+```
+ - Log
+```
+am-11917@docker-ubuntu-1-vm:~$ pachctl logs -v -j 72c9d2445da04e1abb66c829afd10698
+[0000]  INFO parsed scheme: "dns" source=etcd/grpc
+[0000]  INFO ccResolverWrapper: sending update to cc: {[{35.185.199.42:31400  <nil> 0 <nil>}] <nil> <nil>} source=etcd/grpc
+[0000]  INFO ClientConn switching balancer to "pick_first" source=etcd/grpc
+Starting the connection to SQL
+Initiating the connnection
+Connection created to Postgres
+We are looping in the files
+File Name: question_answer_1623550812.csv
+inserting records into the table
+Insert records successful
+inserting records into the table
+Insert records successful
+inserting records into the table
+Insert records successful
+inserting records into the table
+Insert records successful
+inserting records into the table
+Insert records successful
+File successfully moved to: /pfs/out/question_answer_1623550812.csv location
+
+```
+ - Output
+![image](https://user-images.githubusercontent.com/69768815/121793410-b1b30b00-cbcc-11eb-9bbb-b49bec7398a4.png)
+
+
+#### 9. Changes to pipeline specification/ new docker image pushed
  - If you have made any code changes in your python scripts and a new docker image has been pushed
  - Update the pipeline specification json with the new image name
  - Update the existing pipeline with the new specification json
