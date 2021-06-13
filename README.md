@@ -17,6 +17,9 @@ Below is a high-level diagram to show how the pipelines fit in the overall frame
 
 ![image](https://user-images.githubusercontent.com/69768815/121788467-78ae7280-cb9b-11eb-9956-ca049685f0d9.png)
 
+### Architecture of the Product
+![image](https://user-images.githubusercontent.com/69768815/121792053-80334300-cbbe-11eb-93cb-6f621b7cf14e.png)
+
 ### Pipeline 1 Operation:
 ![image](https://user-images.githubusercontent.com/69768815/121788843-d09aa880-cb9e-11eb-912d-6b0f412187f5.png)
 Based on the diagram its clear that this pipeline takes multiple .csv files as an input, processes them using the available Hugging Face models and generates the respective answers as an output. The pipeline is pushed in a docker container and the docker container is referenced in the pachyderm pipeline. We also store the secrets for authenticated requests to the GCS bucket in the pachyderm pipeline. Output is stored in '/pfs/out/' - temporary directory before being committed to the output repository of the pipeline.
@@ -36,9 +39,20 @@ Based on the diagram its clear that this pipeline takes output files as input fr
 ### Below are the steps to deploy your pipelines via Pachyderm:
 Once the above pre-requisites are confirmed ,checkout this repository and proceed as below:
 ### 1. Build and deploy the docker images to DockerHub
-- Add secret DOCKERHUB_USERNAME = <Your dockerhub username> in github secrets
-        - Add secret DOCKERHUB_TOKEN = <Your dockerhub access token> in github secrets </br>
-```Note: Acces tokens can be generated from the docker hub security settings``` [DockerHub](https://hub.docker.com/settings/security)
+- Any docker container image would contain your code to download file from GCS bucket and read it to answer the questions using the context and default hugging face model.
+- Docker file that would tell the commands to run during the docker image build. Sample docker file
+```
+FROM python
+
+ADD requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY question_answer.py /app/question_answer.py
+```
+- Add secret DOCKERHUB_USERNAME = ``<Your dockerhub username>`` in github secrets
+- Add secret DOCKERHUB_TOKEN = <Your dockerhub access token> in github secrets </br>
+```Note: Acces tokens can be generated from the docker hub security settings``` [Generate Access Tokens](https://hub.docker.com/settings/security)
 - Change your ``<your-dockerhub-username>/<docker-imaeg-name>`` in  .github/workflows/main.yml </br>
   ``` 
       name: Build and push
@@ -56,7 +70,7 @@ Once the above pre-requisites are confirmed ,checkout this repository and procee
    <img width="309" alt="1" src="https://user-images.githubusercontent.com/84465734/121768778-fb98e400-cb2d-11eb-91c4-46e1946636f2.PNG">
         
 #### 2.3 Install pachctl on your machine
-     The pachctl or pach control is a command line tool that you can use to interact with a Pachyderm cluster in your terminal. For a Debian based Linux 64-bit or Windows 10
+The pachctl or pach control is a command line tool that you can use to interact with a Pachyderm cluster in your terminal. For a Debian based Linux 64-bit or Windows 10
         or later running on WSL run the following code:
         
    ```
@@ -73,56 +87,204 @@ Once the above pre-requisites are confirmed ,checkout this repository and procee
 #### 3. Connect to your Pachyderm workspace
    Click "Connect" on your Pachyderm workspace and follow the below listed steps to connect to your workspace via the machine:
    
-   <img width="306" alt="2" src="https://user-images.githubusercontent.com/84465734/121769024-50892a00-cb2f-11eb-8546-97b039618abb.PNG">
+   ![image](https://user-images.githubusercontent.com/69768815/121792149-67775d00-cbbf-11eb-92b6-afd91f01bdb1.png)
+
     
-#### 4. Create a new pachctl repo using the below command
-   ```
+#### 4. Create a new repository using pachctl command 
+```
     pachctl create repo <<repo-name-here>>
    ```
-#### 5. Verify that the repo was created using the below command
+#### 5. Configure Secrets in Pachyderm
+Once we are connected to pachyderm, we need to configure the secrets that would authenticate the connection between Pachyderm Kubernetes cluster and your Google Cloud applications - GCS bucket and PostgreSQL </br>
+   - Create environment variables in the terminal/linux or cloud shell you are using to connect to pachyderm</br>
+   - Run the following commands to create the environment variables </br>
+     
 ```
-    pachctl list repo
+     EXPORT PG_HOST= <<host_address for PostgreSQL>>
+     EXPORT PG_USER= <<user_name>>
+     EXPORT PG_PASSWORD= <<password>>
+     EXPORT PG_DBNAME= <<database_name>>
+     EXPORT PG_SSLROOTCERT= <<Path to SSL server-ca.pem>>
+     EXPORT PG_SSLCLIENT_CERT= <<Path to SSL client-cert.pem>>
+     EXPORT PG_SSL_CLIENT_KEY= <<Path to SSL client-key.pem>>
+     EXPORT GOOGLE_APPLICATION_CREDENTIALS= <<Path to the service account credentials.json>>
 ```
-An output like below listing the new repo should be generated:
-    
-    <img width="309" alt="4" src="https://user-images.githubusercontent.com/84465734/121769279-b0cc9b80-cb30-11eb-9171-04baba75e032.PNG">
-    
-#### 6. Now add data to Pachyderm using the command like shown below
-   ```
-   pachctl put file images@master:liberty.png -f http://imgur.com/46Q8nDz.png
-   ```
-   Here "images" is the repo name and "masters" is the branch name, therefore those need to be changed appropriately. Similarly the link/path to the datais (which is the part    after -f) should be updated as well.
-   
-#### 7. Create your JSON pipeline spec like the one shown below for each of the two pipelines
-  ```{
-  "pipeline": {
-    "name": "edges"
-  },
-  "description": "A pipeline that performs image edge detection by using the OpenCV library.",
-  "input": {
-    "pfs": {
-      "glob": "/*",
-      
-      "repo": "images"
-    }
-  },
-  "transform": {
-    "cmd": [ "python3", "/edges.py" ],
-    "image": "pachyderm/opencv"
-  }
+   - Once the environment variables are created, we'll encode those and create a secret.json that will be deployed to pachyderm
+   - Template for the secret.json
+```
+{
+   "apiVersion": "v1",
+   "kind": "Secret",
+   "metadata": {
+      "name": "gcsaccess"
+   },
+   "type": "Opaque",
+   "stringData": {
+      "creds": "REPLACE_GCS_CREDS"
+   }
 }
+
 ```
-Refer to [this helpful tutorial](https://docs.pachyderm.com/latest/getting_started/beginner_tutorial/) to make your pipeline spec. 
-#### 8. Create your pipeline 
-Following is a template command to make your pipeline
- 
-```
-pachctl create pipeline -f https://raw.githubusercontent.com/pachyderm/pachyderm/1.13.x/examples/opencv/edges.json
-```
-or 
-```
-pachctl create pipeline -f pipeline_spec1.json     
+  - Next step would be to replace the environment variables into the secret.json which we'll do with this bash script
 ```
 
-#### 9. Output of Pipeline on Pachyderm Dash
-        
+#!/bin/bash
+
+# Make a copy of our secrets template
+cp secret_template.json secret.json
+cp secret_template_db.json secret_db.json
+
+# Encode our GCS creds
+GCS_ENCODED=$(cat $GOOGLE_APPLICATION_CREDENTIALS | base64 -w 0)
+
+# Substitute those creds into our secrets file
+sed -i -e 's|'REPLACE_GCS_CREDS'|'"$GCS_ENCODED"'|g' secret.json
+sed -i -e 's|'REPLACE_STORAGE_BUCKET'|'"$STORAGE_BUCKET"'|g' secret.json
+
+# Encode our SSL certs
+SSLROOTCERT_ENCODED=$(cat $PG_SSLROOTCERT | base64 -w 0)
+SSLCERT_ENCODED=$(cat $PG_SSLCERT | base64 -w 0)
+SSLKEY_ENCODED=$(cat $PG_SSLKEY | base64 -w 0)
+
+# Substitute those creds into our secrets file
+sed -i -e 's|'REPLACE_PG_HOST'|'"$PG_HOST"'|g' secret_db.json
+sed -i -e 's|'REPLACE_PG_PASSWORD'|'"$PG_PASSWORD"'|g' secret_db.json
+sed -i -e 's|'REPLACE_PG_DBNAME'|'"$PG_DBNAME"'|g' secret_db.json
+sed -i -e 's|'REPLACE_PG_USER'|'"$PG_USER"'|g' secret_db.json
+sed -i -e 's|'REPLACE_PG_SSLROOTCERT'|'"$SSLROOTCERT_ENCODED"'|g' secret_db.json
+sed -i -e 's|'REPLACE_PG_SSLCERT'|'"$SSLCERT_ENCODED"'|g' secret_db.json
+sed -i -e 's|'REPLACE_PG_SSLKEY'|'"$SSLKEY_ENCODED"'|g' secret_db.json
+
+# Create our secrets
+pachctl create secret -f secret.json
+pachctl create secret -f secret_db.json
+
+```
+   - This creates and deploys the secret.json and secret_db.json required for the pipeline's authentication with Google Cloud
+
+#### 6. Now you need to create the pipeline specification JSON that will create a DAG in Pachyderm and run the Pipelines
+
+There are two pipelines that needs to be created and the specification json for both the pipelines is given below
+##### Pipeline 1 - Pull Files from GCS and Answer Questions
+  - You can see that the secrets we created in the previous step are being called here in the pipeline specification as well.
+  - We are referring to the docker images we pushed in the first step as our image
+```
+  {
+   "pipeline":{
+      "name":"question_answer"
+   },
+   "description":"A pipeline that dowloads files from GCS and answers questions.",
+   "transform":{
+      "cmd":[
+         "/bin/bash"
+      ],
+      "stdin":[
+         "echo $GCS_ACCESS > /app/rawcreds.txt",
+         "base64 --decode /app/rawcreds.txt > /app/creds.json",
+         "export GOOGLE_APPLICATION_CREDENTIALS=/app/creds.json",
+         "python /app/question_answer_pd.py"
+      ],
+      "image":"am11917/mgmt590-gcs:4050f86d6f99a184ffe53d55f6972ff675d1ed76",
+      "secrets":[
+         {
+            "name":"gcsaccess",
+            "env_var":"GCS_ACCESS",
+            "key":"creds"
+         },
+                 {
+            "name":"gcsaccess",
+            "env_var":"STORAGE_BUCKET",
+            "key":"storage_bucket"
+         }
+      ]
+   },
+   "input":{
+
+            "cron":{
+               "name":"tick",
+               "spec":"@every 60s"
+            }
+
+
+   }
+}  
+```
+##### Pipeline 2 - Push Answers to SQL
+  - You can see that the secrets we created in the previous step are being called here in the pipeline specification as well.
+  - We are referring to the docker images we pushed in the first step as our image
+```
+{
+   "pipeline":{
+      "name":"push-answers-to-sql"
+   },
+   "description":"A pipeline that pushes answers to the database",
+   "transform":{
+      "cmd":[
+         "python",
+         "/app/answer_insert.py"
+      ],
+      "image":"am11917/mgmt590-db:f181c0c64dc1907b6f963ed6eace6ad4798f1865",
+      "secrets":[
+         {
+            "name":"dbaccess",
+            "env_var":"PG_HOST",
+            "key":"host"
+         },
+         {
+            "name":"dbaccess",
+            "env_var":"PG_PASSWORD",
+            "key":"password"
+         },
+         {
+            "name":"dbaccess",
+            "env_var":"PG_USER",
+            "key":"user"
+         },
+         {
+            "name":"dbaccess",
+            "env_var":"PG_DBNAME",
+            "key":"dbname"
+         },
+         {
+            "name":"dbaccess",
+            "env_var":"PG_SSLROOTCERT",
+            "key":"sslrootcert"
+         },
+         {
+            "name":"dbaccess",
+            "env_var":"PG_SSLCLIENT_CERT",
+            "key":"sslcert"
+         },
+         {
+            "name":"dbaccess",
+            "env_var":"PG_SSL_CLIENT_KEY",
+            "key":"sslkey"
+         }
+      ]
+   },
+   "input":{
+      "pfs":{
+         "repo":"question_answer",
+         "glob":"/"
+      }
+   }
+}
+
+```
+    
+#### 6. Create Pipeline from Spec JSON
+Once the specification json is created, we will now create the pipelines
+   ```
+   pachctl create pipeline -f pipeline1.json
+   pachctl create pipeline -f pipeline2.json
+   ```
+Refer to [this helpful tutorial](https://docs.pachyderm.com/latest/getting_started/beginner_tutorial/) to make your pipeline spec. 
+
+#### 7. Output of Pipeline on Pachyderm Dash
+  - Pipelines on Dashboard </br>
+![image](https://user-images.githubusercontent.com/69768815/121792043-65f96500-cbbe-11eb-9341-fe85e5f72b98.png)
+  - Logs of the running jobs </br>
+![image](https://user-images.githubusercontent.com/69768815/121792458-f3d74f00-cbc2-11eb-93a7-86a199b70c59.png)
+
+# Hope you'll be able to easily replicate the process of creating this batch processing pipeline
+# Reach out to me in case of any questions or concerns
